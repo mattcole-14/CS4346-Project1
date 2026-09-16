@@ -1,429 +1,786 @@
-# CS 4346 Project #1 - Part #2
-# PSR rule learning after converting non-binary inputs
-# into binary conditions.
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
-COLUMNS = [
-    "row", "age", "income", "credit", "loan", "dti",
-    "job", "interest", "term", "housing", "purpose", "Y"
+
+# ============================================================
+# TABLE #3
+# ============================================================
+
+DATA = [
+    {
+        "Row": 1,
+        "Rainfall": 625,
+        "Avg_temp": 21.2,
+        "Soil_pH": 6.5,
+        "Nitrogen": 122,
+        "Phosphorus": 49,
+        "Field_size": 8.4,
+        "Seeds": 22,
+        "Irrigation": 36,
+        "Crop_type": "Wheat",
+        "Soil_type": "Loam",
+        "Yield": 6.9,
+    },
+    {
+        "Row": 2,
+        "Rainfall": 485,
+        "Avg_temp": 23.9,
+        "Soil_pH": 5.9,
+        "Nitrogen": 87,
+        "Phosphorus": 33,
+        "Field_size": 5.8,
+        "Seeds": 20,
+        "Irrigation": 23,
+        "Crop_type": "Wheat",
+        "Soil_type": "Sandy",
+        "Yield": 4.8,
+    },
+    {
+        "Row": 3,
+        "Rainfall": 705,
+        "Avg_temp": 20.4,
+        "Soil_pH": 6.8,
+        "Nitrogen": 133,
+        "Phosphorus": 54,
+        "Field_size": 12.1,
+        "Seeds": 24,
+        "Irrigation": 41,
+        "Crop_type": "Corn",
+        "Soil_type": "Loam",
+        "Yield": 8.0,
+    },
+    {
+        "Row": 4,
+        "Rainfall": 400,
+        "Avg_temp": 26.0,
+        "Soil_pH": 5.7,
+        "Nitrogen": 72,
+        "Phosphorus": 29,
+        "Field_size": 6.3,
+        "Seeds": 18,
+        "Irrigation": 19,
+        "Crop_type": "Corn",
+        "Soil_type": "Clay",
+        "Yield": 4.1,
+    },
+    {
+        "Row": 5,
+        "Rainfall": 555,
+        "Avg_temp": 23.0,
+        "Soil_pH": 6.3,
+        "Nitrogen": 112,
+        "Phosphorus": 45,
+        "Field_size": 9.5,
+        "Seeds": 21,
+        "Irrigation": 31,
+        "Crop_type": "Wheat",
+        "Soil_type": "Loam",
+        "Yield": 6.2,
+    },
+    {
+        "Row": 6,
+        "Rainfall": 745,
+        "Avg_temp": 19.8,
+        "Soil_pH": 6.9,
+        "Nitrogen": 143,
+        "Phosphorus": 59,
+        "Field_size": 13.8,
+        "Seeds": 25,
+        "Irrigation": 47,
+        "Crop_type": "Corn",
+        "Soil_type": "Loam",
+        "Yield": 8.6,
+    },
+    {
+        "Row": 7,
+        "Rainfall": 435,
+        "Avg_temp": 24.8,
+        "Soil_pH": 5.8,
+        "Nitrogen": 80,
+        "Phosphorus": 31,
+        "Field_size": 7.5,
+        "Seeds": 19,
+        "Irrigation": 21,
+        "Crop_type": "Wheat",
+        "Soil_type": "Sandy",
+        "Yield": 4.3,
+    },
+    {
+        "Row": 8,
+        "Rainfall": 645,
+        "Avg_temp": 21.2,
+        "Soil_pH": 6.6,
+        "Nitrogen": 123,
+        "Phosphorus": 51,
+        "Field_size": 10.3,
+        "Seeds": 23,
+        "Irrigation": 37,
+        "Crop_type": "Corn",
+        "Soil_type": "Loam",
+        "Yield": 7.5,
+    },
+    {
+        "Row": 9,
+        "Rainfall": 590,
+        "Avg_temp": 22.1,
+        "Soil_pH": 6.4,
+        "Nitrogen": 115,
+        "Phosphorus": 46,
+        "Field_size": 9.1,
+        "Seeds": 22,
+        "Irrigation": 33,
+        "Crop_type": "Wheat",
+        "Soil_type": "Loam",
+        "Yield": 6.5,
+    },
+    {
+        "Row": 10,
+        "Rainfall": 520,
+        "Avg_temp": 23.4,
+        "Soil_pH": 6.1,
+        "Nitrogen": 98,
+        "Phosphorus": 39,
+        "Field_size": 8.0,
+        "Seeds": 21,
+        "Irrigation": 27,
+        "Crop_type": "Corn",
+        "Soil_type": "Clay",
+        "Yield": 5.6,
+    },
+    {
+        "Row": 11,
+        "Rainfall": 680,
+        "Avg_temp": 20.8,
+        "Soil_pH": 6.7,
+        "Nitrogen": 130,
+        "Phosphorus": 53,
+        "Field_size": 11.6,
+        "Seeds": 24,
+        "Irrigation": 40,
+        "Crop_type": "Corn",
+        "Soil_type": "Loam",
+        "Yield": 7.9,
+    },
+    {
+        "Row": 12,
+        "Rainfall": 455,
+        "Avg_temp": 25.3,
+        "Soil_pH": 5.7,
+        "Nitrogen": 82,
+        "Phosphorus": 34,
+        "Field_size": 6.9,
+        "Seeds": 19,
+        "Irrigation": 24,
+        "Crop_type": "Wheat",
+        "Soil_type": "Sandy",
+        "Yield": 4.6,
+    },
+    {
+        "Row": 13,
+        "Rainfall": 770,
+        "Avg_temp": 19.3,
+        "Soil_pH": 7.0,
+        "Nitrogen": 150,
+        "Phosphorus": 62,
+        "Field_size": 14.4,
+        "Seeds": 25,
+        "Irrigation": 50,
+        "Crop_type": "Corn",
+        "Soil_type": "Loam",
+        "Yield": 8.9,
+    },
+    {
+        "Row": 14,
+        "Rainfall": 570,
+        "Avg_temp": 22.5,
+        "Soil_pH": 6.2,
+        "Nitrogen": 108,
+        "Phosphorus": 43,
+        "Field_size": 9.3,
+        "Seeds": 22,
+        "Irrigation": 32,
+        "Crop_type": "Wheat",
+        "Soil_type": "Loam",
+        "Yield": 6.0,
+    },
+    {
+        "Row": 15,
+        "Rainfall": 610,
+        "Avg_temp": 21.7,
+        "Soil_pH": 6.5,
+        "Nitrogen": 118,
+        "Phosphorus": 47,
+        "Field_size": 10.0,
+        "Seeds": 23,
+        "Irrigation": 35,
+        "Crop_type": "Corn",
+        "Soil_type": "Loam",
+        "Yield": 7.1,
+    },
 ]
 
-RAW_ROWS = [
-    (1, 25, 40, 615, 19, 41, 1, 18.1, 60, "Rent", "Auto", 1),
-    (2, 44, 90, 755, 21, 20, 10, 7.5, 36, "Own", "Home improvement", 0),
-    (3, 32, 57, 670, 16, 34, 4, 13.4, 48, "Rent", "Education", 1),
-    (4, 51, 115, 800, 24, 15, 17, 6.2, 36, "Own", "Auto", 0),
-    (5, 29, 49, 635, 13, 38, 2, 15.8, 60, "Rent", "Medical", 1),
-    (6, 40, 78, 715, 11, 23, 8, 9.1, 36, "Mortgage", "Home improvement", 0),
-    (7, 35, 65, 685, 21, 30, 6, 11.4, 48, "Rent", "Business", 0),
-    (8, 27, 44, 612, 17, 45, 1, 18.8, 60, "Rent", "Education", 1),
-    (9, 47, 96, 770, 18, 18, 12, 6.9, 36, "Own", "Auto", 0),
-    (10, 30, 53, 650, 14, 36, 3, 14.6, 48, "Rent", "Medical", 1),
-    (11, 54, 122, 815, 27, 13, 20, 5.5, 36, "Own", "Home improvement", 0),
-    (12, 38, 72, 705, 12, 26, 7, 9.8, 48, "Mortgage", "Business", 0),
-    (13, 23, 36, 600, 20, 47, 0, 19.5, 60, "Rent", "Education", 1),
-    (14, 42, 84, 735, 16, 22, 9, 8.3, 36, "Own", "Auto", 0),
-    (15, 33, 60, 675, 23, 33, 5, 12.5, 48, "Rent", "Business", 1),
+
+NUMERIC_FEATURES = [
+    "Rainfall",
+    "Avg_temp",
+    "Soil_pH",
+    "Nitrogen",
+    "Phosphorus",
+    "Field_size",
+    "Seeds",
+    "Irrigation",
 ]
 
-DATA = [dict(zip(COLUMNS, row)) for row in RAW_ROWS]
-
-# Feature order is also used as the final tie-break order.
-FEATURES = [
-    "AGE",
-    "INCOME",
-    "CREDIT",
-    "LOAN",
-    "DTI",
-    "JOB",
-    "INTEREST",
-    "TERM",
-    "HOUSING",
-    "PURPOSE",
+CATEGORICAL_FEATURES = [
+    "Crop_type",
+    "Soil_type",
 ]
 
-CONDITION_TEXT = {
-    "AGE": "Age <= 30",
-    "INCOME": "Annual income <= 55 ($k)",
-    "CREDIT": "Credit score <= 665",
-    "LOAN": "Loan >= 12 ($k)",
-    "DTI": "Debt/income >= 35%",
-    "JOB": "Job years <= 4",
-    "INTEREST": "Interest >= 13.8%",
-    "TERM": "Loan term = 60 months",
-    "HOUSING": "Housing = Rent",
-    "PURPOSE": "Loan purpose = Education",
-}
+FEATURE_ORDER = NUMERIC_FEATURES + CATEGORICAL_FEATURES
+
+# Minimum observations allowed in each final rule/group
+MIN_LEAF = 2
+
+# Used for floating-point equality when identifying ties
+EPS = 1e-12
 
 
-def convert_row(r):
-    """Convert one original Table #2 row to binary values."""
-    return {
-        "row": r["row"],
-        "AGE": int(r["age"] <= 30),
-        "INCOME": int(r["income"] <= 55),
-        "CREDIT": int(r["credit"] <= 665),
-        "LOAN": int(r["loan"] >= 12),
-        "DTI": int(r["dti"] >= 35),
-        "JOB": int(r["job"] <= 4),
-        "INTEREST": int(r["interest"] >= 13.8),
-        "TERM": int(r["term"] == 60),
-        "HOUSING": int(r["housing"] == "Rent"),
-        "PURPOSE": int(r["purpose"] == "Education"),
-        "Y": r["Y"],
-    }
+# ============================================================
+# BASIC REGRESSION CALCULATIONS
+# ============================================================
+
+def mean_y(rows):
+    return sum(row["Yield"] for row in rows) / len(rows)
 
 
-BINARY = [convert_row(row) for row in DATA]
+def sse(rows):
+    if not rows:
+        return 0.0
 
+    mean = mean_y(rows)
 
-def psr(rows, feature):
-    """
-    PSR(P) = nP+ / nP
-
-    nP  = number of rows where P = 1
-    nP+ = number of those rows where Y = 1
-    """
-    denominator = sum(row[feature] == 1 for row in rows)
-
-    numerator = sum(
-        row[feature] == 1 and row["Y"] == 1
+    return sum(
+        (row["Yield"] - mean) ** 2
         for row in rows
     )
 
-    if denominator == 0:
-        return numerator, denominator, 0.0
 
-    return numerator, denominator, numerator / denominator
+# ============================================================
+# TREE DATA STRUCTURES
+# ============================================================
+
+@dataclass
+class Split:
+    feature: str
+    kind: str
+
+    reduction: float
+    after_sse: float
+
+    left: List[Dict[str, Any]]
+    right: List[Dict[str, Any]]
+
+    threshold: Optional[float] = None
+    category: Optional[str] = None
 
 
-def choose_best(rows, available_features):
-    """
-    Choose the parameter with the highest PSR.
+@dataclass
+class Node:
+    rows: List[Dict[str, Any]]
 
-    Tie #1:
-        Choose the parameter with larger support/denominator.
+    split: Optional[Split] = None
 
-    Tie #2:
-        Choose whichever occurs earlier in FEATURES.
-    """
-    best = None
+    left: Optional["Node"] = None
+    right: Optional["Node"] = None
 
-    for order, feature in enumerate(FEATURES):
 
-        if feature not in available_features:
-            continue
+# ============================================================
+# GENERATE ALL POSSIBLE SPLITS
+# ============================================================
 
-        numerator, denominator, ratio = psr(rows, feature)
+def candidate_splits(rows):
 
-        # P=1 covers no rows, so the parameter cannot reduce the table.
-        if denominator == 0:
-            continue
+    parent_sse = sse(rows)
 
-        candidate = (
-            ratio,
-            denominator,
-            -order,
-            feature
+    candidates = []
+
+    # --------------------------------------------------------
+    # Numeric input parameters
+    # --------------------------------------------------------
+
+    for feature in NUMERIC_FEATURES:
+
+        values = sorted(
+            set(float(row[feature]) for row in rows)
         )
 
-        if best is None or candidate > best:
-            best = candidate
+        # Test midpoint between adjacent distinct values
+        for first, second in zip(values[:-1], values[1:]):
 
-    if best is None:
-        return None
+            threshold = (first + second) / 2.0
 
-    return best[3]
-
-
-def print_binary_table():
-    """Print the complete modified binary table."""
-    headers = ["row"] + FEATURES + ["Y"]
-
-    print("\nMODIFIED BINARY TABLE #2")
-    print(" ".join(f"{header:>8}" for header in headers))
-    print("-" * (9 * len(headers)))
-
-    for row in BINARY:
-        print(
-            " ".join(
-                f"{row[header]:>8}"
-                for header in headers
-            )
-        )
-
-
-def print_initial_psr():
-    """Compute and print initial PSR values."""
-    print("\nINITIAL PSR VALUES")
-
-    print(
-        f"{'Parameter':<12}"
-        f"{'nP+':>6}"
-        f"{'nP':>6}"
-        f"{'PSR':>9}   Condition"
-    )
-
-    print("-" * 78)
-
-    for feature in FEATURES:
-
-        numerator, denominator, ratio = psr(
-            BINARY,
-            feature
-        )
-
-        print(
-            f"{feature:<12}"
-            f"{numerator:>6}"
-            f"{denominator:>6}"
-            f"{ratio:>9.3f}   "
-            f"{CONDITION_TEXT[feature]}"
-        )
-
-
-def find_binary_conflicts(rows):
-    """
-    Find positive and negative rows that have exactly
-    the same binary input vector.
-    """
-    conflicts = []
-
-    for i, first in enumerate(rows):
-
-        for second in rows[i + 1:]:
-
-            same_inputs = all(
-                first[feature] == second[feature]
-                for feature in FEATURES
-            )
-
-            opposite_targets = (
-                first["Y"] != second["Y"]
-            )
-
-            if same_inputs and opposite_targets:
-
-                conflicts.append(
-                    (first["row"], second["row"])
-                )
-
-    return conflicts
-
-
-def generate_rules(rows):
-    """
-    Generate rules using the PSR algorithm from the course.
-
-    After a complete rule is found:
-    - Remove the positive rows it covers.
-    - Keep all negative rows.
-    - Begin learning the next rule.
-    """
-    rules = []
-
-    uncovered_positives = {
-        row["row"]
-        for row in rows
-        if row["Y"] == 1
-    }
-
-    rule_number = 1
-
-    while uncovered_positives:
-
-        # New table contains:
-        # all negatives
-        # +
-        # positive rows not already covered
-        current = [
-            row
-            for row in rows
-            if (
-                row["Y"] == 0
-                or row["row"] in uncovered_positives
-            )
-        ]
-
-        available = FEATURES.copy()
-        antecedent = []
-
-        # Continue specializing while negative rows remain.
-        while any(row["Y"] == 0 for row in current):
-
-            feature = choose_best(
-                current,
-                available
-            )
-
-            if feature is None:
-
-                print(
-                    f"\nR{rule_number} "
-                    f"cannot be completed."
-                )
-
-                if antecedent:
-                    print(
-                        "Current antecedent: "
-                        + " AND ".join(
-                            f"{f}=1"
-                            for f in antecedent
-                        )
-                    )
-
-                print(
-                    "Rows still covered:",
-                    [row["row"] for row in current]
-                )
-
-                return (
-                    rules,
-                    sorted(uncovered_positives)
-                )
-
-            numerator, denominator, ratio = psr(
-                current,
-                feature
-            )
-
-            print(
-                f"R{rule_number} select {feature}: "
-                f"{numerator}/{denominator} "
-                f"= {ratio:.3f}"
-            )
-
-            antecedent.append(feature)
-
-            available.remove(feature)
-
-            # Construct the next reduced table.
-            current = [
+            left = [
                 row
-                for row in current
-                if row[feature] == 1
+                for row in rows
+                if float(row[feature]) <= threshold
             ]
 
-            # A valid rule must still cover a positive row.
-            if not any(
-                row["Y"] == 1
-                for row in current
-            ):
+            right = [
+                row
+                for row in rows
+                if float(row[feature]) > threshold
+            ]
 
-                print(
-                    f"\nR{rule_number} "
-                    "lost all positive rows."
+            # Every final group must contain at least MIN_LEAF
+            if len(left) < MIN_LEAF or len(right) < MIN_LEAF:
+                continue
+
+            after_sse = sse(left) + sse(right)
+
+            reduction = parent_sse - after_sse
+
+            candidates.append(
+                Split(
+                    feature=feature,
+                    kind="numeric",
+                    threshold=threshold,
+                    reduction=reduction,
+                    after_sse=after_sse,
+                    left=left,
+                    right=right,
                 )
+            )
 
-                return (
-                    rules,
-                    sorted(uncovered_positives)
+    # --------------------------------------------------------
+    # Categorical input parameters
+    # --------------------------------------------------------
+
+    for feature in CATEGORICAL_FEATURES:
+
+        categories = sorted(
+            set(str(row[feature]) for row in rows)
+        )
+
+        # Test each category against all other categories
+        for category in categories:
+
+            left = [
+                row
+                for row in rows
+                if str(row[feature]) == category
+            ]
+
+            right = [
+                row
+                for row in rows
+                if str(row[feature]) != category
+            ]
+
+            if len(left) < MIN_LEAF or len(right) < MIN_LEAF:
+                continue
+
+            after_sse = sse(left) + sse(right)
+
+            reduction = parent_sse - after_sse
+
+            candidates.append(
+                Split(
+                    feature=feature,
+                    kind="categorical",
+                    category=category,
+                    reduction=reduction,
+                    after_sse=after_sse,
+                    left=left,
+                    right=right,
                 )
+            )
 
-        # No negative rows remain: completed rule.
-        covered = [
-            row["row"]
-            for row in current
-            if row["Y"] == 1
+    return candidates
+
+
+# ============================================================
+# SELECT BEST SPLIT
+# ============================================================
+
+def choose_best_split(rows):
+
+    candidates = candidate_splits(rows)
+
+    if not candidates:
+        return None, []
+
+    best_reduction = max(
+        candidate.reduction
+        for candidate in candidates
+    )
+
+    tied = [
+        candidate
+        for candidate in candidates
+        if abs(candidate.reduction - best_reduction) <= EPS
+    ]
+
+    # --------------------------------------------------------
+    # REQUIRED TIE BREAK:
+    # If Rainfall is tied for the best reduction,
+    # select Rainfall.
+    # --------------------------------------------------------
+
+    rainfall_ties = [
+        candidate
+        for candidate in tied
+        if candidate.feature == "Rainfall"
+    ]
+
+    if rainfall_ties:
+
+        rainfall_ties.sort(
+            key=lambda candidate:
+            candidate.threshold
+            if candidate.threshold is not None
+            else float("inf")
+        )
+
+        return rainfall_ties[0], tied
+
+    # --------------------------------------------------------
+    # If Rainfall is NOT part of the tie,
+    # select according to the original input-column order.
+    # --------------------------------------------------------
+
+    def deterministic_key(candidate):
+
+        feature_rank = FEATURE_ORDER.index(
+            candidate.feature
+        )
+
+        if candidate.threshold is not None:
+            value_rank = candidate.threshold
+        else:
+            value_rank = str(candidate.category)
+
+        return feature_rank, str(value_rank)
+
+    tied.sort(key=deterministic_key)
+
+    return tied[0], tied
+
+
+# ============================================================
+# BUILD REGRESSION RULE TREE
+# ============================================================
+
+def build_tree(rows, depth=0):
+
+    node = Node(rows=rows)
+
+    best, tied = choose_best_split(rows)
+
+    # Stop if no legal split exists
+    # or the split does not reduce SSE.
+    if best is None or best.reduction <= EPS:
+        return node
+
+    node.split = best
+
+    indent = "  " * depth
+
+    if best.kind == "numeric":
+
+        split_text = (
+            f"{best.feature} <= "
+            f"{best.threshold:g}"
+        )
+
+    else:
+
+        split_text = (
+            f"{best.feature} == "
+            f"{best.category}"
+        )
+
+    tied_features = sorted(
+        set(candidate.feature for candidate in tied)
+    )
+
+    print(
+        f"{indent}"
+        f"Rows {[row['Row'] for row in rows]}: "
+        f"SSE={sse(rows):.6f} -> "
+        f"split on {split_text}; "
+        f"after SSE={best.after_sse:.6f}; "
+        f"reduction={best.reduction:.6f}"
+    )
+
+    if len(tied_features) > 1:
+
+        print(
+            f"{indent}  Equal-best features: "
+            f"{', '.join(tied_features)}"
+        )
+
+        if "Rainfall" in tied_features:
+
+            print(
+                f"{indent}  Rainfall selected "
+                f"by the required tie-break rule."
+            )
+
+    # Recursively create child nodes
+    node.left = build_tree(
+        best.left,
+        depth + 1
+    )
+
+    node.right = build_tree(
+        best.right,
+        depth + 1
+    )
+
+    return node
+
+
+# ============================================================
+# COLLECT TERMINAL RULES
+# ============================================================
+
+def collect_leaves(node, path=None):
+
+    if path is None:
+        path = []
+
+    if node.split is None:
+        return [(path, node.rows)]
+
+    split = node.split
+
+    if split.kind == "numeric":
+
+        left_condition = (
+            split.feature,
+            "<=",
+            split.threshold
+        )
+
+        right_condition = (
+            split.feature,
+            ">",
+            split.threshold
+        )
+
+    else:
+
+        left_condition = (
+            split.feature,
+            "==",
+            split.category
+        )
+
+        right_condition = (
+            split.feature,
+            "!=",
+            split.category
+        )
+
+    return (
+        collect_leaves(
+            node.left,
+            path + [left_condition]
+        )
+        +
+        collect_leaves(
+            node.right,
+            path + [right_condition]
+        )
+    )
+
+
+# ============================================================
+# SIMPLIFY CONDITIONS
+# ============================================================
+
+def simplify_numeric_path(path):
+
+    bounds = {}
+
+    categorical_conditions = []
+
+    for feature, operator, value in path:
+
+        if feature in NUMERIC_FEATURES:
+
+            if feature not in bounds:
+
+                bounds[feature] = {
+                    "lower": None,
+                    "upper": None,
+                }
+
+            if operator == ">":
+
+                current = bounds[feature]["lower"]
+
+                if current is None:
+                    bounds[feature]["lower"] = value
+                else:
+                    bounds[feature]["lower"] = max(
+                        current,
+                        value
+                    )
+
+            elif operator == "<=":
+
+                current = bounds[feature]["upper"]
+
+                if current is None:
+                    bounds[feature]["upper"] = value
+                else:
+                    bounds[feature]["upper"] = min(
+                        current,
+                        value
+                    )
+
+        else:
+
+            categorical_conditions.append(
+                f"{feature} {operator} {value}"
+            )
+
+    conditions = []
+
+    for feature in FEATURE_ORDER:
+
+        if feature not in bounds:
+            continue
+
+        lower = bounds[feature]["lower"]
+        upper = bounds[feature]["upper"]
+
+        if lower is not None and upper is not None:
+
+            conditions.append(
+                f"{feature} > {lower:g} "
+                f"AND {feature} <= {upper:g}"
+            )
+
+        elif lower is not None:
+
+            conditions.append(
+                f"{feature} > {lower:g}"
+            )
+
+        elif upper is not None:
+
+            conditions.append(
+                f"{feature} <= {upper:g}"
+            )
+
+    conditions.extend(
+        categorical_conditions
+    )
+
+    return conditions
+
+
+# ============================================================
+# PRINT FINAL RULES
+# ============================================================
+
+def print_rules(tree):
+
+    leaves = collect_leaves(tree)
+
+    print()
+    print("FINAL REGRESSION RULES")
+    print("-" * 72)
+
+    final_sse = 0.0
+
+    for rule_number, (path, rows) in enumerate(
+        leaves,
+        start=1
+    ):
+
+        conditions = simplify_numeric_path(path)
+
+        prediction = mean_y(rows)
+
+        leaf_sse = sse(rows)
+
+        final_sse += leaf_sse
+
+        row_numbers = [
+            row["Row"]
+            for row in rows
         ]
 
-        rules.append(
-            (
-                rule_number,
-                antecedent.copy(),
-                covered
-            )
-        )
-
-        uncovered_positives.difference_update(
-            covered
+        print(
+            f"R{rule_number}: "
+            f"IF {' AND '.join(conditions)}, "
+            f"THEN Yield = "
+            f"{prediction:.4f} t/ha"
         )
 
         print(
-            f"\nR{rule_number}: IF "
-            + " AND ".join(
-                f"{feature}=1"
-                for feature in antecedent
-            )
-            + ", THEN Y=1"
+            f"    Rows: {row_numbers} "
+            f"| Leaf SSE = "
+            f"{leaf_sse:.6f}"
         )
 
-        print(
-            "Covered positive rows:",
-            covered
-        )
+    starting_sse = sse(DATA)
 
-        rule_number += 1
+    print("-" * 72)
 
-    return rules, []
+    print(
+        f"Starting mean Yield = "
+        f"{mean_y(DATA):.4f} t/ha"
+    )
+
+    print(
+        f"Starting SSE        = "
+        f"{starting_sse:.6f}"
+    )
+
+    print(
+        f"Final SSE           = "
+        f"{final_sse:.6f}"
+    )
+
+    print(
+        f"Total SSE reduction = "
+        f"{starting_sse - final_sse:.6f}"
+    )
+
+    print(
+        f"Percent reduction   = "
+        f"{((starting_sse - final_sse) / starting_sse) * 100:.4f}%"
+    )
 
 
 # ============================================================
 # MAIN PROGRAM
 # ============================================================
 
-print("BINARY CONDITIONS")
-print("-" * 70)
-
-for feature in FEATURES:
-    print(
-        f"{feature:<10} -> "
-        f"{CONDITION_TEXT[feature]}"
-    )
-
-
-print_binary_table()
-
-print_initial_psr()
-
-
-print("\nRULE GENERATION")
-print("=" * 70)
-
-rules, unresolved = generate_rules(
-    BINARY
-)
-
-
-print("\nFINAL COMPLETED RULES")
-print("=" * 70)
-
-if rules:
-
-    for number, antecedent, covered in rules:
-
-        print(
-            f"R{number}: IF "
-            + " AND ".join(
-                f"{feature}=1"
-                for feature in antecedent
-            )
-            + f", THEN Y=1 "
-              f"(covers rows {covered})"
-        )
-
-else:
-    print("No completed rules were generated.")
-
-
-if unresolved:
+if __name__ == "__main__":
 
     print(
-        "\nUnresolved positive rows:",
-        unresolved
+        "REGRESSION-RULE LEARNING "
+        "ON TABLE #3"
     )
 
-    conflicts = find_binary_conflicts(
-        BINARY
+    print(
+        f"Minimum observations "
+        f"per final group = {MIN_LEAF}"
     )
 
-    if conflicts:
+    print(
+        "Tie-break rule: choose Rainfall "
+        "whenever Rainfall is tied for "
+        "best SSE reduction."
+    )
 
-        print(
-            "\nBinary-input conflicts "
-            "(same inputs but opposite Y):"
-        )
+    print()
 
-        for first, second in conflicts:
-            print(
-                f"Rows {first} and {second}"
-            )
+    tree = build_tree(DATA)
+
+    print_rules(tree)
